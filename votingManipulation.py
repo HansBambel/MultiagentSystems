@@ -48,4 +48,15 @@ for scheme in votingSchemes:
     print(f'Winner: {winner}')
     print(f'Overall Happiness: {np.sum(calcHappiness(winner, prefMatrix))}')
     print()
+
+# TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
+# A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
+# where 𝑣 – is a tactically modified preference list of this voter,
+# 𝑂̃ – a voting outcome resulting from applying 𝑣,
+# 𝐻̃ – an overall voter happiness level resulting from applying 𝑣, and
+# 𝑧 – briefly states why 𝑖 prefers 𝑂̃ over 𝑂 (i.e., what the advantage is for 𝑖);
+
+# TODO: Overall risk of strategic voting for this voting situation
+# 𝑅=|𝑆|𝑛⁄ (size of strategic-voting options set over the number of voters).
+
 # print(calcHappiness('B', prefMatrix))
