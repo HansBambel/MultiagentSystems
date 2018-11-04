@@ -1,15 +1,19 @@
 import numpy as np
 from collections import Counter, OrderedDict
 
+# example of a preference matrix
 prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
 
+# possible voting schemes
 votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
 
+# calc the number of candidates - index where the first preference of voter is
 def calcHappiness(winner, prefMatrix):
     return len(prefMatrix[0]) - np.where(prefMatrix == winner)[1]
 
+
 bordaPoints = np.arange(len(prefMatrix[0]))[::-1]
-# TODO tiebreaker
+
 for scheme in votingSchemes:
     print(f"Scheme: {scheme}")
     print(f"Non Strategic Outcome: ")
@@ -34,6 +38,7 @@ for scheme in votingSchemes:
         candidates = c.most_common()
         maxVotes = c.most_common(1)[0][1]
 
+    # Sort winners by lexicographical order
     winners = []
     for (candidate, votes) in candidates:
         if votes < maxVotes:
