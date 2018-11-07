@@ -12,9 +12,11 @@ def calcHappiness(winner, prefMatrix):
     return len(prefMatrix[0]) - np.where(prefMatrix == winner)[1]
 
 
-bordaPoints = np.arange(len(prefMatrix[0]))[::-1]
 
-for scheme in votingSchemes:
+
+
+def votingResults(prefMatrix, scheme):
+    bordaPoints = np.arange(len(prefMatrix[0]))[::-1]
     print(f"Scheme: {scheme}")
     print(f"Non Strategic Outcome: ")
     if scheme == "Borda":
