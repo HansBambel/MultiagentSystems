@@ -1,11 +1,17 @@
 import numpy as np
 from collections import Counter
+import itertools
+import copy
 
-# example of a preference matrix
-prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
 
-# possible voting schemes
-votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
+def main():
+    # example of a preference matrix
+    prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
+    # possible voting schemes
+    votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
+    for scheme in votingSchemes:
+        votingResults(prefMatrix, scheme)
+    print(howShouldLie(1, prefMatrix, "VfO"))
 
 
 # calc the number of candidates - index where the first preference of voter is
@@ -48,10 +54,28 @@ def votingResults(prefMatrix, scheme):
     print(f'Winner: {winner}')
     print(f'Overall Happiness: {np.sum(calcHappiness(winner, prefMatrix))}')
     print()
+    return calcHappiness(winner, prefMatrix)
 
 
-for scheme in votingSchemes:
-    votingResults(prefMatrix, scheme)
+def howShouldLie(voter, prefMatrix, scheme):
+    happiness = votingResults(prefMatrix, scheme)[voter]
+    lying = False
+    if happiness == len(prefMatrix[0]):
+        return False, prefMatrix[voter]
+    else:
+        bestPrefs = prefMatrix[voter]
+        for prefs in itertools.permutations(prefMatrix[voter]):
+            newPrefMatrix = copy.copy(prefMatrix)
+            newPrefMatrix[voter] = prefs
+            newHappiness = votingResults(newPrefMatrix, scheme)[voter]
+            if newHappiness > happiness:
+                happiness = newHappiness
+                lying = True
+                bestPrefs = prefs
+        return lying, bestPrefs
+
+
+
 # TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
@@ -63,3 +87,5 @@ for scheme in votingSchemes:
 # 𝑅=|𝑆|𝑛⁄ (size of strategic-voting options set over the number of voters).
 
 # print(calcHappiness('B', prefMatrix))
+
+main()
