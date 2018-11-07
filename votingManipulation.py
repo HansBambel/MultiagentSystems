@@ -1,5 +1,5 @@
 import numpy as np
-from collections import Counter, OrderedDict
+from collections import Counter
 
 # example of a preference matrix
 prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
@@ -7,12 +7,10 @@ prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E',
 # possible voting schemes
 votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
 
+
 # calc the number of candidates - index where the first preference of voter is
 def calcHappiness(winner, prefMatrix):
     return len(prefMatrix[0]) - np.where(prefMatrix == winner)[1]
-
-
-
 
 
 def votingResults(prefMatrix, scheme):
@@ -40,7 +38,7 @@ def votingResults(prefMatrix, scheme):
         candidates = c.most_common()
         maxVotes = c.most_common(1)[0][1]
 
-    # Sort winners by lexicographical order
+    # Tie-breaking: Sort winners by lexicographical order
     winners = []
     for (candidate, votes) in candidates:
         if votes < maxVotes:
@@ -51,6 +49,9 @@ def votingResults(prefMatrix, scheme):
     print(f'Overall Happiness: {np.sum(calcHappiness(winner, prefMatrix))}')
     print()
 
+
+for scheme in votingSchemes:
+    votingResults(prefMatrix, scheme)
 # TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
