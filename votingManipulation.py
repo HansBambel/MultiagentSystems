@@ -45,9 +45,9 @@ def votingResults(prefMatrix, scheme):
 def howShouldLie(voter, prefMatrix, scheme):
     winnerBefore, happiness = votingResults(prefMatrix, scheme)
     lying = False
-    hapinessVoter = happiness[voter]
-    if hapinessVoter == len(prefMatrix[0]):
-        return False, prefMatrix[voter]
+    happinessVoter = happiness[voter]
+    if happinessVoter == len(prefMatrix[0]):
+        return False, prefMatrix[voter], happinessVoter
     else:
         bestPrefs = prefMatrix[voter]
         for prefs in itertools.permutations(prefMatrix[voter]):
@@ -55,11 +55,11 @@ def howShouldLie(voter, prefMatrix, scheme):
             newPrefMatrix[voter] = prefs
             winnerNew, newHappiness = votingResults(newPrefMatrix, scheme)
             newHappinessVoter = newHappiness[voter]
-            if newHappinessVoter > hapinessVoter:
-                hapinessVoter = newHappinessVoter
+            if newHappinessVoter > happinessVoter:
+                happinessVoter = newHappinessVoter
                 lying = True
                 bestPrefs = prefs
-        return lying, bestPrefs
+        return lying, bestPrefs, happinessVoter
 
 
 def main():
@@ -73,8 +73,16 @@ def main():
         winner, happiness = votingResults(prefMatrix, scheme)
         print(f'Winner: {winner}')
         print(f'Overall Happiness: {np.sum(happiness)}')
+        numLyingVoters = 0
+        for i, voter in enumerate(prefMatrix):
+            voterLies, bestPrefs, newHappiness = howShouldLie(i, prefMatrix, scheme)
+
+            if voterLies:
+                numLyingVoters += 1
+                print(f'Voter {i} happiness before: {happiness[i]}, after: {newHappiness}')
+        print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         print()
-    print(howShouldLie(1, prefMatrix, "VfO"))
+    # print(howShouldLie(1, prefMatrix, "VfO"))
 # TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
