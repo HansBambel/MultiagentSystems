@@ -47,7 +47,7 @@ def howShouldLie(voter, prefMatrix, scheme):
     lying = False
     happinessVoter = happiness[voter]
     if happinessVoter == len(prefMatrix[0]):
-        return False, prefMatrix[voter], happinessVoter
+        return False, prefMatrix[voter], winnerBefore, happinessVoter
     else:
         bestPrefs = prefMatrix[voter]
         for prefs in itertools.permutations(prefMatrix[voter]):
@@ -59,7 +59,7 @@ def howShouldLie(voter, prefMatrix, scheme):
                 happinessVoter = newHappinessVoter
                 lying = True
                 bestPrefs = prefs
-        return lying, bestPrefs, happinessVoter
+        return lying, bestPrefs, winnerNew, happinessVoter
 
 
 def main():
@@ -75,11 +75,11 @@ def main():
         print(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
         for i, voter in enumerate(prefMatrix):
-            voterLies, bestPrefs, newHappiness = howShouldLie(i, prefMatrix, scheme)
+            voterLies, bestPrefs, newWinner, newHappiness = howShouldLie(i, prefMatrix, scheme)
 
             if voterLies:
                 numLyingVoters += 1
-                print(f'Voter {i} happiness before: {happiness[i]}, after: {newHappiness}')
+                print(f'Voter {i} happiness before: {happiness[i]}, new Winner: {newWinner}, after: {newHappiness}')
         print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         print()
     # print(howShouldLie(1, prefMatrix, "VfO"))
