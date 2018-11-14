@@ -4,16 +4,6 @@ import itertools
 import copy
 
 
-def main():
-    # example of a preference matrix
-    prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
-    # possible voting schemes
-    votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
-    for scheme in votingSchemes:
-        votingResults(prefMatrix, scheme)
-    print(howShouldLie(1, prefMatrix, "VfO"))
-
-
 # calc the number of candidates - index where the first preference of voter is
 def calcHappiness(winner, prefMatrix):
     return len(prefMatrix[0]) - np.where(prefMatrix == winner)[1]
@@ -21,14 +11,12 @@ def calcHappiness(winner, prefMatrix):
 
 def votingResults(prefMatrix, scheme):
     bordaPoints = np.arange(len(prefMatrix[0]))[::-1]
-    print(f"Scheme: {scheme}")
-    print(f"Non Strategic Outcome: ")
     if scheme == "Borda":
         candidateVotes = dict()
         for voter in prefMatrix:
             for i, cand in enumerate(voter):
                 candidateVotes[cand] = candidateVotes.get(cand, 0) + bordaPoints[i]
-        print(f'Bordapoints: {sorted(candidateVotes.items(), key=lambda t: t[1])[::-1]}')
+        # print(f'Bordapoints: {sorted(candidateVotes.items(), key=lambda t: t[1])[::-1]}')
         candidates = sorted(candidateVotes.items(), key=lambda t: t[1])[::-1]
         maxVotes = candidates[0][1]
     else:
@@ -39,7 +27,7 @@ def votingResults(prefMatrix, scheme):
         elif scheme == "Veto":
             c = Counter(prefMatrix[:, :-1].reshape(-1))
 
-        print(c)
+        # print(c)
         # print(f'mostCommon: {c.most_common()}')
         candidates = c.most_common()
         maxVotes = c.most_common(1)[0][1]
@@ -51,31 +39,42 @@ def votingResults(prefMatrix, scheme):
             break
         winners.append(candidate)
     winner = sorted(winners)[0]
-    print(f'Winner: {winner}')
-    print(f'Overall Happiness: {np.sum(calcHappiness(winner, prefMatrix))}')
-    print()
-    return calcHappiness(winner, prefMatrix)
+    return winner, calcHappiness(winner, prefMatrix)
 
 
 def howShouldLie(voter, prefMatrix, scheme):
-    happiness = votingResults(prefMatrix, scheme)[voter]
+    winnerBefore, happiness = votingResults(prefMatrix, scheme)
     lying = False
-    if happiness == len(prefMatrix[0]):
+    hapinessVoter = happiness[voter]
+    if hapinessVoter == len(prefMatrix[0]):
         return False, prefMatrix[voter]
     else:
         bestPrefs = prefMatrix[voter]
         for prefs in itertools.permutations(prefMatrix[voter]):
             newPrefMatrix = copy.copy(prefMatrix)
             newPrefMatrix[voter] = prefs
-            newHappiness = votingResults(newPrefMatrix, scheme)[voter]
-            if newHappiness > happiness:
-                happiness = newHappiness
+            winnerNew, newHappiness = votingResults(newPrefMatrix, scheme)
+            newHappinessVoter = newHappiness[voter]
+            if newHappinessVoter > hapinessVoter:
+                hapinessVoter = newHappinessVoter
                 lying = True
                 bestPrefs = prefs
         return lying, bestPrefs
 
 
-
+def main():
+    # example of a preference matrix
+    prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'], ['A', 'F', 'C', 'D', 'E', 'B'], ['B', 'F', 'E', 'D', 'C', 'A']])
+    # possible voting schemes
+    votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
+    print(f"Non Strategic Outcome: ")
+    for scheme in votingSchemes:
+        print(f'Scheme: {scheme}')
+        winner, happiness = votingResults(prefMatrix, scheme)
+        print(f'Winner: {winner}')
+        print(f'Overall Happiness: {np.sum(happiness)}')
+        print()
+    print(howShouldLie(1, prefMatrix, "VfO"))
 # TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
@@ -87,5 +86,6 @@ def howShouldLie(voter, prefMatrix, scheme):
 # 𝑅=|𝑆|𝑛⁄ (size of strategic-voting options set over the number of voters).
 
 # print(calcHappiness('B', prefMatrix))
+
 
 main()
