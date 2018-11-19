@@ -47,6 +47,7 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
     happiness = calcHappiness(winnerBefore, prefMatrix)
     lying = False
     happinessVoter = happiness[voter]
+    # print(happinessVoter)
     if happinessVoter == len(prefMatrix[0])-1:
         return False, prefMatrix[voter], winnerBefore, happinessVoter
     else:
@@ -62,7 +63,11 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
                 happinessVoter = newHappinessVoter
                 lying = True
                 bestPrefs = prefs
-        return lying, bestPrefs, winnerNew, happinessVoter
+                winnerSaved = winnerNew
+        if lying:
+            return lying, bestPrefs, winnerSaved, happinessVoter
+        else:
+            return False, prefMatrix[voter], winnerBefore, happinessVoter
 
 
 def main():
