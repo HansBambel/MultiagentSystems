@@ -49,7 +49,7 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
     happinessVoter = happiness[voter]
     # print(happinessVoter)
     if happinessVoter == len(prefMatrix[0])-1:
-        return False, prefMatrix[voter], winnerBefore, happinessVoter
+        return False, prefMatrix[voter], winnerBefore, happinessVoter, np.sum(happiness)
     else:
         bestPrefs = prefMatrix[voter]
         for prefs in itertools.permutations(prefMatrix[voter]):
@@ -63,11 +63,12 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
                 happinessVoter = newHappinessVoter
                 lying = True
                 bestPrefs = prefs
-                winnerSaved = winnerNew
+                savedWinner = winnerNew
+                savedTotalHappiness = np.sum(newHappiness)
         if lying:
-            return lying, bestPrefs, winnerSaved, happinessVoter
+            return True, bestPrefs, savedWinner, happinessVoter, savedTotalHappiness
         else:
-            return False, prefMatrix[voter], winnerBefore, happinessVoter
+            return False, prefMatrix[voter], winnerBefore, happinessVoter, np.sum(happiness)
 
 
 def main():
@@ -89,22 +90,23 @@ def main():
         print(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
         for i, voter in enumerate(prefMatrix):
-            voterLies, bestPrefs, newWinner, newHappiness = howShouldVoterLie(i, prefMatrix, scheme)
+            voterLies, bestPrefs, newWinner, newHappiness, newTotalHappiness = howShouldVoterLie(i, prefMatrix, scheme)
 
             if voterLies:
                 numLyingVoters += 1
-                print(f'Voter {i} happiness before: {happiness[i]}, after: {newHappiness}, new Winner: {newWinner}, true intention: {prefMatrix[i]}, voted: {bestPrefs}')
+                # print(f'Voter {i} happiness before: {happiness[i]}, after: {newHappiness}, new Winner: {newWinner}, true intention: {prefMatrix[i]}, voted: {bestPrefs}')
+                print(f'Voter {i} modified prefList: {bestPrefs}, new Winner: {newWinner}, new overall Happiness: {newTotalHappiness}, Reason for Voter {i}: happiness increase: {happiness[i]} --> {newHappiness}')
         print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         print()
     # print(howShouldVoterLie(1, prefMatrix, "VfO"))
-# TODO: Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
+# Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
 # 𝑂̃ – a voting outcome resulting from applying 𝑣,
 # 𝐻̃ – an overall voter happiness level resulting from applying 𝑣, and
 # 𝑧 – briefly states why 𝑖 prefers 𝑂̃ over 𝑂 (i.e., what the advantage is for 𝑖);
 
-# TODO: Overall risk of strategic voting for this voting situation
+# Overall risk of strategic voting for this voting situation
 # 𝑅=|𝑆|𝑛⁄ (size of strategic-voting options set over the number of voters).
 
 # print(calcHappiness('B', prefMatrix))
