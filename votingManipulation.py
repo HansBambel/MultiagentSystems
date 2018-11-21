@@ -45,14 +45,17 @@ def votingResults(prefMatrix, scheme):
 def howShouldVoterLie(voter, prefMatrix, scheme):
     winnerBefore = votingResults(prefMatrix, scheme)
     happiness = calcHappiness(winnerBefore, prefMatrix)
-    lying = False
+    lies = 0
     happinessVoter = happiness[voter]
-    shadyShit = 'None'
+    sVotingOptions = []
+    winners = []
+    voterHappinesses = []
+    totalHappinesses = []
     # print(happinessVoter)
-    if happinessVoter == len(prefMatrix[0])-1:
-        return False, prefMatrix[voter], winnerBefore, happinessVoter, np.sum(happiness), shadyShit
+    if happinessVoter == len(prefMatrix[0]) - 1:
+        return 0, [prefMatrix[voter]], [winnerBefore], [happinessVoter], [np.sum(happiness)]
     else:
-        bestPrefs = prefMatrix[voter]
+        # bestPrefs = prefMatrix[voter]
         for prefs in itertools.permutations(prefMatrix[voter]):
             newPrefMatrix = copy.copy(prefMatrix)
             newPrefMatrix[voter] = prefs
@@ -61,31 +64,25 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
             newHappiness = calcHappiness(winnerNew, prefMatrix)
             newHappinessVoter = newHappiness[voter]
             if newHappinessVoter > happinessVoter:
-                happinessVoter = newHappinessVoter
-                # check WHAT exact kind of shady stuff the voter did
-                # print(np.where(prefMatrix[voter] == winnerNew)[0][0])
-                # print(prefs[np.where(prefMatrix[voter] == winnerNew)[0][0]+1:])
-                if winnerNew in prefs[:np.where(prefMatrix[voter] == winnerNew)[0][0]]:
-                    shadyShit = 'Compromise'
-                if winnerBefore in prefs[np.where(prefMatrix[voter] == winnerBefore)[0][0]+1:]:
-                    shadyShit = 'Burying'
-
-                lying = True
-                bestPrefs = prefs
-                savedWinner = winnerNew
-                savedTotalHappiness = np.sum(newHappiness)
-        if lying:
-            return True, bestPrefs, savedWinner, happinessVoter, savedTotalHappiness, shadyShit
+                # happinessVoter = newHappinessVoter
+                lies += 1
+                # bestPrefs = prefs
+                sVotingOptions.append(prefs)
+                # savedWinner = winnerNew
+                winners.append(winnerNew)
+                # savedTotalHappiness = np.sum(newHappiness)
+                voterHappinesses.append(newHappinessVoter)
+                totalHappinesses.append(np.sum(newHappiness))
+        if lies != 0:
+            return lies, sVotingOptions, winners, voterHappinesses, totalHappinesses
         else:
-            return False, prefMatrix[voter], winnerBefore, happinessVoter, np.sum(happiness), shadyShit
+            return lies, [prefMatrix[voter]], [winnerBefore], [happinessVoter], [np.sum(happiness)]
 
 
 def main():
     # example of a preference matrix
     prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'],
                            ['A', 'F', 'C', 'D', 'E', 'B'],
-                           ['E', 'A', 'B', 'F', 'C', 'D'],
-                           ['D', 'C', 'A', 'B', 'E', 'F'],
                            ['B', 'F', 'E', 'D', 'C', 'A']])
     # print(f'Should be 10: {np.sum(calcHappiness("B", prefMatrix))}')
     # print(f'Should be 12: {np.sum(calcHappiness("F", prefMatrix))}')
@@ -101,11 +98,18 @@ def main():
         print(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
         for i, voter in enumerate(prefMatrix):
-            voterLies, bestPrefs, newWinner, newHappiness, newTotalHappiness, shadyShit = howShouldVoterLie(i, prefMatrix, scheme)
+            voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
+            if voterLies != 0:
+                numLyingVoters += voterLies
+                print(f'Voter {i} real preferences {prefMatrix[i]}')
+                # print(f'Voter {i} happiness before: {happiness[i]}, after: {newHappiness}, new Winner: {newWinner}, true intention: {prefMatrix[i]}, voted: {bestPrefs}')
+                for x in range(voterLies):
+                    print(f'Voter {i} modified prefList: {sVotingOptions[x]}, new Winner: {winners[x]}, new overall Happiness: {totalHappinesses[x]}, Reason for Voter {i}: happiness increase: {happiness[i]} --> {voterHappinesses[x]}')
+                    if winners[x] in sVotingOptions[x][:np.where(prefMatrix[i] == winners[x])[0][0]]:
+                        print('Compromise')
+                    if winner in sVotingOptions[x][np.where(prefMatrix[i] == winner)[0][0]+1:]:
+                        print('Burying')
 
-            if voterLies:
-                numLyingVoters += 1
-                print(f'Voter {i} true pref: {prefMatrix[i]}, modified prefList: {bestPrefs}, new Winner: {newWinner}, new overall Happiness: {newTotalHappiness}, Reason for Voter {i}: happiness increase: {happiness[i]} --> {newHappiness}, voter used: {shadyShit}')
         print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         print()
     # print(howShouldVoterLie(1, prefMatrix, "VfO"))
