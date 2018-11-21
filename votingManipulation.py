@@ -5,6 +5,7 @@ import copy
 
 OUTPUT = ''
 
+
 # calc the number of candidates - index where the first preference of voter is
 def calcHappiness(winner, prefMatrix):
     return len(prefMatrix[0]) - np.where(prefMatrix == winner)[1] - 1
@@ -89,8 +90,8 @@ def main():
                            ['B', 'F', 'E', 'D', 'C', 'A']])
     # possible voting schemes
     ##### SELECT YOUR VOTING SCHEME HERE ######
-    # votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
-    votingSchemes = ["VfT"]
+    votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
+    # votingSchemes = ["VfT"]
     printf(f"Non Strategic Outcome: ")
     for scheme in votingSchemes:
         printf(f'Scheme: {scheme}')
@@ -106,8 +107,8 @@ def main():
                 printf(f'\nVoter {i} real preferences {prefMatrix[i]}')
                 for x in range(voterLies):
                     printf(f'Voter {i} modified prefList: {sVotingOptions[x]},'
-                          + f' new Winner: {winners[x]}, new overall Happiness: {totalHappinesses[x]},'
-                          + f' Reason: happiness increase: {happiness[i]} --> {voterHappinesses[x]}')
+                           + f' new Winner: {winners[x]}, new overall Happiness: {totalHappinesses[x]},'
+                           + f' Reason: happiness increase: {happiness[i]} --> {voterHappinesses[x]}')
                     if winners[x] in sVotingOptions[x][:np.where(prefMatrix[i] == winners[x])[0][0]]:
                         printf('Compromise')
                     if winner in sVotingOptions[x][np.where(prefMatrix[i] == winner)[0][0]+1:]:
@@ -115,6 +116,9 @@ def main():
 
         printf(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         printf()
+
+    writeOutToFile(votingSchemes)
+
 # Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
@@ -127,15 +131,18 @@ def main():
 
 # print(calcHappiness('B', prefMatrix))
 
+
 def printf(string='\n'):
     global OUTPUT
     OUTPUT += string + '\n'
 
-def writeOutToFile():
+
+def writeOutToFile(scheme):
     global OUTPUT
-    with open('output.txt', 'w') as f:
+    name = ''.join(scheme)
+    with open(f'{name}.txt', 'w') as f:
         f.write(OUTPUT)
     OUTPUT = ''
 
+
 main()
-writeOutToFile()
