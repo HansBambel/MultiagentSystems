@@ -3,6 +3,7 @@ from collections import Counter
 import itertools
 import copy
 
+OUTPUT = ''
 
 # calc the number of candidates - index where the first preference of voter is
 def calcHappiness(winner, prefMatrix):
@@ -90,30 +91,30 @@ def main():
     ##### SELECT YOUR VOTING SCHEME HERE ######
     # votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
     votingSchemes = ["VfT"]
-    print(f"Non Strategic Outcome: ")
+    printf(f"Non Strategic Outcome: ")
     for scheme in votingSchemes:
-        print(f'Scheme: {scheme}')
+        printf(f'Scheme: {scheme}')
         winner = votingResults(prefMatrix, scheme)
         happiness = calcHappiness(winner, prefMatrix)
-        print(f'Winner: {winner}')
-        print(f'Overall Happiness: {np.sum(happiness)}')
+        printf(f'Winner: {winner}')
+        printf(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
         for i, voter in enumerate(prefMatrix):
             voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
             if voterLies != 0:
                 numLyingVoters += 1
-                print(f'\nVoter {i} real preferences {prefMatrix[i]}')
+                printf(f'\nVoter {i} real preferences {prefMatrix[i]}')
                 for x in range(voterLies):
-                    print(f'Voter {i} modified prefList: {sVotingOptions[x]},'
+                    printf(f'Voter {i} modified prefList: {sVotingOptions[x]},'
                           + f' new Winner: {winners[x]}, new overall Happiness: {totalHappinesses[x]},'
                           + f' Reason: happiness increase: {happiness[i]} --> {voterHappinesses[x]}')
                     if winners[x] in sVotingOptions[x][:np.where(prefMatrix[i] == winners[x])[0][0]]:
-                        print('Compromise')
+                        printf('Compromise')
                     if winner in sVotingOptions[x][np.where(prefMatrix[i] == winner)[0][0]+1:]:
-                        print('Burying')
+                        printf('Burying')
 
-        print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
-        print()
+        printf(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
+        printf()
 # Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
 # where 𝑣 – is a tactically modified preference list of this voter,
@@ -126,5 +127,15 @@ def main():
 
 # print(calcHappiness('B', prefMatrix))
 
+def printf(string='\n'):
+    global OUTPUT
+    OUTPUT += string + '\n'
+
+def writeOutToFile():
+    global OUTPUT
+    with open('output.txt', 'w') as f:
+        f.write(OUTPUT)
+    OUTPUT = ''
 
 main()
+writeOutToFile()
