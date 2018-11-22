@@ -115,7 +115,7 @@ def generatePrefMatrix(amount_voters, amount_options):
     full_options = [a for a in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
     current_options = full_options[:amount_options]
     perms = [list(i) for i in itertools.permutations(current_options)]
-    tuplematrix = [list(i) for i in itertools.combinations(perms, amount_voters)]
+    tuplematrix = [list(i) for i in itertools.combinations_with_replacement(perms, amount_voters)]
     return tuplematrix
 
 
