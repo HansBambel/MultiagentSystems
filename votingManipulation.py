@@ -79,7 +79,7 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
     else:
         return lies, [prefMatrix[voter]], [winnerBefore], [happinessVoter], [np.sum(happiness)]
 
-
+strategic_distr = {}
 def main(prefs, voting=['VfO']):
     # example of a preference matrix
     ##### ENTER YOUR PREFERENCEMATRIX HERE #####
@@ -87,6 +87,7 @@ def main(prefs, voting=['VfO']):
     # possible voting schemes
     ##### SELECT YOUR VOTING SCHEME HERE ######
     votingSchemes = voting
+    global strategic_distr
     # votingSchemes = ["VfT"]
     print(f"Non Strategic Outcome: ")
     for scheme in votingSchemes:
@@ -100,9 +101,13 @@ def main(prefs, voting=['VfO']):
             voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
             if voterLies != 0:
                 numLyingVoters += 1
-        print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
+        strategic_voting_val = numLyingVoters/prefMatrix.shape[0]
+        if strategic_voting_val in strategic_distr.keys():
+            strategic_distr[strategic_voting_val] += 1
+        else:
+            strategic_distr[strategic_voting_val] = 1
+        print(f'Risk of strategic voting: {strategic_voting_val}')
         print()
-
     writeOutToFile(votingSchemes)
 
 
@@ -113,6 +118,13 @@ def generatePrefMatrix(amount_voters, amount_options):
     tuplematrix = [list(i) for i in itertools.combinations(perms, amount_voters)]
     return tuplematrix
 
+
+def run_all_matrices(amount_voters, amount_options, scheme=['VfO']):
+    global strategic_distr
+    for m in generatePrefMatrix(amount_voters, amount_options):
+        main(m, scheme)
+    print('DISTRIBUTION', strategic_distr)
+    strategic_distr = {}
 
 # Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
