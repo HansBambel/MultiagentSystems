@@ -100,10 +100,12 @@ def main():
         printf(f'Winner: {winner}')
         printf(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
+        numLyingOptions = 0
         for i, voter in enumerate(prefMatrix):
             voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
             if voterLies != 0:
                 numLyingVoters += 1
+                numLyingOptions += voterLies
                 printf(f'\nVoter {i} real preferences {prefMatrix[i]}')
                 for x in range(voterLies):
                     printf(f'Voter {i} modified prefList: {sVotingOptions[x]},'
@@ -114,7 +116,8 @@ def main():
                     if winner in sVotingOptions[x][np.where(prefMatrix[i] == winner)[0][0]+1:]:
                         printf('Burying')
 
-        printf(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
+        printf(f'Risk of strategic voting (taken from assignment): {numLyingOptions/prefMatrix.shape[0]}')
+        printf(f'Our definition of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
         printf()
 
     writeOutToFile(votingSchemes)
