@@ -127,16 +127,17 @@ def overall_happiness_experiment(amount_voters, amount_options):
     scheme_stats = {}
     for s in schemes:
         scheme_stats[s] = 0
+
     for m in generatePrefMatrix(amount_voters, amount_options):
         m = np.array(m)
         max_happiness = 0
         for scheme in schemes:
-            print(m)
             winner = votingResults(m, scheme)
             happiness = np.sum(calcHappiness(winner, m))
             if happiness > max_happiness:
                 max_happiness = happiness
-                scheme_stats[scheme] += 1
+                winner_scheme = scheme
+        scheme_stats[winner_scheme] += 1
     print(scheme_stats)
 
 def run_all_matrices(amount_voters, amount_options, scheme=['VfO']):
