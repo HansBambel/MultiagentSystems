@@ -80,44 +80,39 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
         return lies, [prefMatrix[voter]], [winnerBefore], [happinessVoter], [np.sum(happiness)]
 
 
-def main():
+def main(prefs, voting=['VfO']):
     # example of a preference matrix
     ##### ENTER YOUR PREFERENCEMATRIX HERE #####
-    prefMatrix = np.array([['B', 'F', 'A', 'C', 'E', 'D'],
-                           ['A', 'F', 'C', 'D', 'E', 'B'],
-                           ['D', 'A', 'F', 'C', 'E', 'B'],
-                           ['B', 'F', 'C', 'D', 'E', 'A'],
-                           ['B', 'F', 'E', 'D', 'C', 'A']])
+    prefMatrix = np.array(prefs)
     # possible voting schemes
     ##### SELECT YOUR VOTING SCHEME HERE ######
-    votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
+    votingSchemes = voting
     # votingSchemes = ["VfT"]
-    printf(f"Non Strategic Outcome: ")
+    print(f"Non Strategic Outcome: ")
     for scheme in votingSchemes:
-        printf(f'Scheme: {scheme}')
+        print(f'Scheme: {scheme}')
         winner = votingResults(prefMatrix, scheme)
         happiness = calcHappiness(winner, prefMatrix)
-        printf(f'Winner: {winner}')
-        printf(f'Overall Happiness: {np.sum(happiness)}')
+        print(f'Winner: {winner}')
+        print(f'Overall Happiness: {np.sum(happiness)}')
         numLyingVoters = 0
         for i, voter in enumerate(prefMatrix):
             voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
             if voterLies != 0:
                 numLyingVoters += 1
-                printf(f'\nVoter {i} real preferences {prefMatrix[i]}')
-                for x in range(voterLies):
-                    printf(f'Voter {i} modified prefList: {sVotingOptions[x]},'
-                           + f' new Winner: {winners[x]}, new overall Happiness: {totalHappinesses[x]},'
-                           + f' Reason: happiness increase: {happiness[i]} --> {voterHappinesses[x]}')
-                    if winners[x] in sVotingOptions[x][:np.where(prefMatrix[i] == winners[x])[0][0]]:
-                        printf('Compromise')
-                    if winner in sVotingOptions[x][np.where(prefMatrix[i] == winner)[0][0]+1:]:
-                        printf('Burying')
-
-        printf(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
-        printf()
+        print(f'Risk of strategic voting: {numLyingVoters/prefMatrix.shape[0]}')
+        print()
 
     writeOutToFile(votingSchemes)
+
+
+def generatePrefMatrix(amount_voters, amount_options):
+    full_options = [a for a in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
+    current_options = full_options[:amount_options]
+    perms = [list(i) for i in itertools.permutations(current_options)]
+    tuplematrix = [list(i) for i in itertools.combinations(perms, amount_voters)]
+    return tuplematrix
+
 
 # Possibly empty set of strategic-voting options 𝑆={𝑠𝑖},𝑖∈𝑛.
 # A strategic-voting option for voter 𝑖 is a tuple 𝑠𝑖=(𝑣,𝑂̃,𝐻̃,𝑧),
@@ -145,4 +140,4 @@ def writeOutToFile(scheme):
     OUTPUT = ''
 
 
-main()
+#main()
