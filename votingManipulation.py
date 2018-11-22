@@ -80,6 +80,7 @@ def howShouldVoterLie(voter, prefMatrix, scheme):
         return lies, [prefMatrix[voter]], [winnerBefore], [happinessVoter], [np.sum(happiness)]
 
 strategic_distr = {}
+
 def main(prefs, voting=['VfO']):
     # example of a preference matrix
     ##### ENTER YOUR PREFERENCEMATRIX HERE #####
@@ -118,6 +119,25 @@ def generatePrefMatrix(amount_voters, amount_options):
     tuplematrix = [list(i) for i in itertools.combinations_with_replacement(perms, amount_voters)]
     return tuplematrix
 
+def overall_happiness_experiment(amount_voters, amount_options):
+    # for every matrix
+    # for every scheme
+    # max_{scheme}(happiness)
+    schemes = ['VfO', 'VfT', 'Veto', 'Borda']
+    scheme_stats = {}
+    for s in schemes:
+        scheme_stats[s] = 0
+    for m in generatePrefMatrix(amount_voters, amount_options):
+        m = np.array(m)
+        max_happiness = 0
+        for scheme in schemes:
+            print(m)
+            winner = votingResults(m, scheme)
+            happiness = np.sum(calcHappiness(winner, m))
+            if happiness > max_happiness:
+                max_happiness = happiness
+                scheme_stats[scheme] += 1
+    print(scheme_stats)
 
 def run_all_matrices(amount_voters, amount_options, scheme=['VfO']):
     global strategic_distr
