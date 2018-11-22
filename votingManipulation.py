@@ -87,11 +87,11 @@ def main():
                            ['A', 'F', 'C', 'D', 'E', 'B'],
                            ['D', 'A', 'F', 'C', 'E', 'B'],
                            ['B', 'F', 'C', 'D', 'E', 'A'],
-                           ['B', 'F', 'E', 'D', 'C', 'A']])
+                           ['E', 'B', 'F', 'D', 'C', 'A']])
     # possible voting schemes
     ##### SELECT YOUR VOTING SCHEME HERE ######
     votingSchemes = ["VfO", "VfT", "Veto", "Borda"]
-    # votingSchemes = ["VfT"]
+    # votingSchemes = ["VfO", "Veto"]
     printf(f"Non Strategic Outcome: ")
     for scheme in votingSchemes:
         printf(f'Scheme: {scheme}')
