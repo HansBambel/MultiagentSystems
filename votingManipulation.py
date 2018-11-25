@@ -119,6 +119,7 @@ def generatePrefMatrix(amount_voters, amount_options):
     tuplematrix = [list(i) for i in itertools.combinations_with_replacement(perms, amount_voters)]
     return tuplematrix
 
+
 def overall_happiness_experiment(amount_voters, amount_options):
     # for every matrix
     # for every scheme
@@ -139,6 +140,7 @@ def overall_happiness_experiment(amount_voters, amount_options):
                 winner_scheme = scheme
         scheme_stats[winner_scheme] += 1
     print(scheme_stats)
+
 
 def run_all_matrices(amount_voters, amount_options, scheme=['VfO']):
     global strategic_distr
