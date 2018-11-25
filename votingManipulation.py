@@ -4,6 +4,65 @@ import itertools
 import copy
 
 OUTPUT = ''
+strategic_distr = {}
+
+
+def _risk_exp_helper(prefs, voting=['VfO']):
+    prefMatrix = np.array(prefs)
+    votingSchemes = voting
+    global strategic_distr
+    # votingSchemes = ["VfT"]
+    for scheme in votingSchemes:
+        winner = votingResults(prefMatrix, scheme)
+        happiness = calcHappiness(winner, prefMatrix)
+        numLyingVoters = 0
+        for i, voter in enumerate(prefMatrix):
+            voterLies, sVotingOptions, winners, voterHappinesses, totalHappinesses = howShouldVoterLie(i, prefMatrix, scheme)
+            if voterLies != 0:
+                numLyingVoters += 1
+        strategic_voting_val = numLyingVoters/prefMatrix.shape[0]
+        if strategic_voting_val in strategic_distr.keys():
+            strategic_distr[strategic_voting_val] += 1
+        else:
+            strategic_distr[strategic_voting_val] = 1
+
+
+def risk_experiment(amount_voters, amount_options, scheme=['VfO']):
+    global strategic_distr
+    for m in generatePrefMatrix(amount_voters, amount_options):
+        _risk_exp_helper(m, scheme)
+    print('DISTRIBUTION', strategic_distr)
+    strategic_distr = {}
+
+
+def overall_happiness_experiment(amount_voters, amountoptions):
+    # for every matrix
+    # for every scheme
+    # max{scheme}(happiness)
+    schemes = ['VfO', 'VfT', 'Veto', 'Borda']
+    scheme_stats = {}
+    for s in schemes:
+        scheme_stats[s] = 0
+
+    for m in generatePrefMatrix(amount_voters, amount_options):
+        m = np.array(m)
+        max_happiness = 0
+        for scheme in schemes:
+            winner = votingResults(m, scheme)
+            happiness = np.sum(calcHappiness(winner, m))
+            if happiness >= max_happiness:
+                max_happiness = happiness
+                winner_scheme = scheme
+        scheme_stats[winner_scheme] += 1
+    print(scheme_stats)
+
+
+def generatePrefMatrix(amount_voters, amount_options):
+    full_options = [a for a in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
+    current_options = full_options[:amount_options]
+    perms = [list(i) for i in itertools.permutations(current_options)]
+    tuplematrix = [list(i) for i in itertools.combinations_with_replacement(perms, amount_voters)]
+    return tuplematrix
 
 
 # calc the number of candidates - index where the first preference of voter is
@@ -18,7 +77,6 @@ def votingResults(prefMatrix, scheme):
         for voter in prefMatrix:
             for i, cand in enumerate(voter):
                 candidateVotes[cand] = candidateVotes.get(cand, 0) + bordaPoints[i]
-        # print(f'Bordapoints: {sorted(candidateVotes.items(), key=lambda t: t[1])[::-1]}')
         candidates = sorted(candidateVotes.items(), key=lambda t: t[1])[::-1]
         maxVotes = candidates[0][1]
     else:
