@@ -15,35 +15,47 @@ def auctionItems(itemStartingprice, biddingFactorAlpha):
     Returns:
     (new starting price, new bidding factors,
      total buyer profit, total seller profit, market history)
+
     """
     bids = biddingFactorAlpha * itemStartingprice
     # NOTE auctions take place one item at a time
+    winners = []
     for i, item in enumerate(itemStartingprice):
         print(f'Startingprice: {item}')
         print(f'bids: {bids[:, i]}')
-        average = np.mean(bids[:, i])
-        print(f'average: {average}')
-        # belowAverage = np.where(bids[:, i] < average)[0]
+        average = computeMarketPrice(bids, i)
         sortedBids = sorted(bids[:, i][bids[:, i] < average])
-        print(sortedBids)
         winner = sortedBids[-1]
         winnerInd = np.where(bids[:, i] == winner)[0][0]
+        winners.append(winnerInd)
+
+        # winner pays only second highest
         winnerToPay = sortedBids[-2]
-        # TODO winner pays only second highest
-        # maybe sort and look at the highest two below average
+        # TODO update biddingfactor for all buyers (for now moved out of this function)
+        # NOTE: in "pure" auctions update only if buyer has not won yet
+        # --> (because if a buyer has won he does not bid anymore)
+        # TODO check whether buyer wants to revoke previous won item (need penalty here)
+        # --> seller gets penalty (profit + penalty), but profit of previous sell needs to be deducted
         print(f'winner: {winnerInd} with bid: {winner},' +
               f'to Pay: {winnerToPay}, profit: {average - winnerToPay}')
+    return winners
 
 
-def updateBiddingFactor(biddingFactor):
+def updateBiddingFactor(biddingFactor, winnerIDs, sellerIDs, lowerDelta, higherDelta):
     """Standard bidding strategy update
 
     After each auction over item m offered by seller k where
     buyer n participated the value of the bidding factor is updated
     (standard bidding strategy)
+    After each auction over item m offered by seller k where buyer n
+    participated value of the bidding factor is updated:
+    where ∆ n – a bid decrease factor of buyer n (∆ n ≤ 1), and ∆ n – is a bid increase factor of buyer n (∆ n ≥ 1). The bid
+    factors are set per buyer once per simulation. This way the bids of the buyer n are going to adapt to results of
+    auctions organized by seller k for a particular item m.
     """
 
     # Calculate new biddingfactor
+    # if won: use lowerDelta, else: higherDelta
     return biddingFactor
 
 
@@ -58,7 +70,7 @@ def assignItemToSeller(S, M):
     return np.random.randint(low=0, high=M, size=S)
 
 
-def computeMarketPrice(bids):
+def computeMarketPrice(bids, i):
     """Calculate current market price.
 
     Once all the bids are placed, a market price is computed as
@@ -68,7 +80,7 @@ def computeMarketPrice(bids):
     For every item, over every seller of this item, the average value
     of the item (type).
     """
-    pass
+    return np.mean(bids[:, i])
 
 
 def initBiddingFactor(amountBuyers, amountSellers):
@@ -88,6 +100,18 @@ def assignPriceToItem(sellerItems, numRounds, maxPrice):
     """Every seller assigns a price to its item"""
     itemPrices = np.random.uniform(size=(numRounds, len(sellerItems)), low=0, high=maxPrice)
     return np.round(itemPrices, decimals=2)
+
+
+def rearangeArray(array, indices):
+    return [array[i] for i in indices]
+
+
+def restoreOriginalOrder(array, orderedInd):
+    out = []
+    for i in range(len(array)):
+        ind = np.where(orderedInd == i)[0][0]
+        out.append(array[ind])
+    return out
 
 
 btypes = ['default']
@@ -123,17 +147,29 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
 
     seller2Items = assignItemToSeller(K, M)
     valueItems = assignPriceToItem(seller2Items, R, Smax)
-    # lowerDelta = np.random.uniform(0.5, 1.0, size=N)
-    # higherDelta = np.random.uniform(1.0, 1.5, size=N)
+    lowerDelta = np.random.uniform(0.5, 1.0, size=N)
+    higherDelta = np.random.uniform(1.0, 1.5, size=N)
 
     biddingFactorHistory = []
     biddingFactor = initBiddingFactor(N, K)
     biddingFactorHistory.append(biddingFactor)
     for auctionRound in range(R):
         print(auctionRound)
-        biddingFactor = auctionItems(valueItems[auctionRound],
-                                     biddingFactor)
+        print(f'biddingFactor: {biddingFactor}')
+        print(f'valueItems: {valueItems[auctionRound]}')
+        # randomize order of sold items
+        auctionItemOrderInd = np.random.permutation(np.arange(K))
+        print(auctionItemOrderInd)
+        auctionItemOrder = rearangeArray(valueItems[auctionRound], auctionItemOrderInd)
+        # adapt to the biddingFactors to the order the items are sold
+        biddingFactorOrder = np.array([rearangeArray(i, auctionItemOrderInd) for i in biddingFactor])
+        # print(biddingFactor)
+        # print(f'{biddingFactorOrder}')
+        winners = auctionItems(auctionItemOrder,
+                               biddingFactorOrder)
+
+        updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         biddingFactorHistory.append(biddingFactor)
-        
+
 
 auctionSimulation(6, 3, 10, 8, 100, 5)
