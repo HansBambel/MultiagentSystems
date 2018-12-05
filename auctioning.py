@@ -55,10 +55,7 @@ def assignItemToSeller(S, M):
     the item m element of M, which it will auction across all the rounds.
     Note that multiple sellers might sell item m of the same type.
     """
-    mapping = []
-    for i in range(M):
-        mapping.append(np.random.uniform([0, M, 1]))
-    return mapping
+    return np.random.randint(low=0, high=M, size=S)
 
 
 def computeMarketPrice(bids):
@@ -74,21 +71,23 @@ def computeMarketPrice(bids):
     pass
 
 
-def initBiddingFactor(amountRounds, amountBuyers, amountSellers):
+def initBiddingFactor(amountBuyers, amountSellers):
     """Generate initial bidding factor
 
     The initial bidding factor is not generated for every round
     because it persists between rounds. The updateBiddingFactor
     function handles the updating.
     """
-    biddingFactorAlpha = np.random.uniform(1.0, 1.9,
-                                           size=(R, N, K))  # I dont know how to use the thing but R wil not be needed
+    # biddingfactor is 2 dimensional
+    biddingFactorAlpha = np.random.uniform(low=1.0, high=1.9,
+                                           size=(amountBuyers, amountSellers))  # I dont know how to use the thing but R wil not be needed
     return biddingFactorAlpha
 
 
-def assignPriceToItem(S):
+def assignPriceToItem(sellerItems, numRounds, maxPrice):
     """Every seller assigns a price to its item"""
-    return None
+    itemPrices = np.random.uniform(size=(numRounds, len(sellerItems)), low=0, high=maxPrice)
+    return np.round(itemPrices, decimals=2)
 
 
 btypes = ['default']
@@ -122,15 +121,19 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
     rSellerProfit = []
     rBuyersProfit = []
 
-    sellerItem = assignItemToSeller(S, M)
-    valueItem = assignPriceToItem(S)
-
+    seller2Items = assignItemToSeller(K, M)
+    valueItems = assignPriceToItem(seller2Items, R, Smax)
     # lowerDelta = np.random.uniform(0.5, 1.0, size=N)
     # higherDelta = np.random.uniform(1.0, 1.5, size=N)
 
+    biddingFactorHistory = []
     biddingFactor = initBiddingFactor(N, K)
-
+    biddingFactorHistory.append(biddingFactor)
     for auctionRound in range(R):
         print(auctionRound)
-        biddingFactor = auctionItems(valueItem[auctionRound],
+        biddingFactor = auctionItems(valueItems[auctionRound],
                                      biddingFactor)
+        biddingFactorHistory.append(biddingFactor)
+        
+
+auctionSimulation(6, 3, 10, 8, 100, 5)
