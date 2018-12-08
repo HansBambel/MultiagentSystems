@@ -5,3 +5,6 @@
 *.gz
 *.out
 report/sample/*
+.idea/*
+*.txt
+__pycache__/*

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def auctionItems(itemStartingprice, biddingFactorAlpha):
+def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=5):
     """A round of auctions
 
     It needs to return after every iteration (round) the values needed
@@ -31,9 +31,7 @@ def auctionItems(itemStartingprice, biddingFactorAlpha):
 
         # winner pays only second highest
         winnerToPay = sortedBids[-2]
-        # TODO update biddingfactor for all buyers (for now moved out of this function)
-        # NOTE: in "pure" auctions update only if buyer has not won yet
-        # --> (because if a buyer has won he does not bid anymore)
+
         # TODO check whether buyer wants to revoke previous won item (need penalty here)
         # --> seller gets penalty (profit + penalty), but profit of previous sell needs to be deducted
         print(f'winner: {winnerInd} with bid: {winner},' +
@@ -52,7 +50,13 @@ def updateBiddingFactor(biddingFactor, winnerIDs, sellerIDs, lowerDelta, higherD
     where ∆ n – a bid decrease factor of buyer n (∆ n ≤ 1), and ∆ n – is a bid increase factor of buyer n (∆ n ≥ 1). The bid
     factors are set per buyer once per simulation. This way the bids of the buyer n are going to adapt to results of
     auctions organized by seller k for a particular item m.
+
+    # NOTE: in "pure" auctions update only if buyer has not won yet
+    # --> (because if a buyer has won he does not bid anymore)
     """
+    for winner, seller in enumerate(sellerIDs):
+        biddingFactor[winnerIDs[winner], seller] *= lowerDelta[winnerIDs[winner]]
+        biddingFactor[~winnerIDs[winner], seller] *= higherDelta[~winnerIDs[winner]]
 
     # Calculate new biddingfactor
     # if won: use lowerDelta, else: higherDelta
@@ -147,8 +151,8 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
 
     seller2Items = assignItemToSeller(K, M)
     valueItems = assignPriceToItem(seller2Items, R, Smax)
-    lowerDelta = np.random.uniform(0.5, 1.0, size=N)
-    higherDelta = np.random.uniform(1.0, 1.5, size=N)
+    lowerDelta = np.random.uniform(0.7, 1.0, size=N)
+    higherDelta = np.random.uniform(1.0, 1.3, size=N)
 
     biddingFactorHistory = []
     biddingFactor = initBiddingFactor(N, K)
@@ -168,7 +172,7 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
         winners = auctionItems(auctionItemOrder,
                                biddingFactorOrder)
 
-        updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
+        biddingFactor = updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         biddingFactorHistory.append(biddingFactor)
 
 
