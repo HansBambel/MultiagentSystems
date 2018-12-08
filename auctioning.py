@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
+# import tqdm
 
 
-def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
+def auctionItemsImpure(itemStartingprice, biddingFactorAlpha, penalty=0.05):
     """A round of auctions
 
     It needs to return after every iteration (round) the values needed
@@ -19,14 +19,12 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
      total buyer profit, total seller profit, market history)
 
     """
-
     auctionRounds = []
     bids = biddingFactorAlpha * itemStartingprice
     # NOTE auctions take place one item at a time
     winners = []
     for i, item in enumerate(itemStartingprice):
         # print(f'Startingprice: {item}')
-        # impure
         # look at old bids and adapt bids with formula 4
         for winnerInd, marketPrice, winningBid in auctionRounds:
             bids[winnerInd, i] = max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
@@ -41,14 +39,10 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         winnerToPay = sortedBids[-2]
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
-        # TODO check whether buyer wants to revoke previous won item (need penalty here)
-        # --> seller gets penalty (profit + penalty), but profit of previous sell needs to be deducted
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
     # after auction ends: calculate profits
     profitBuyer, profitSeller = calculateProfits(auctionRounds, len(biddingFactorAlpha), len(biddingFactorAlpha[1]), penalty)
 
-    # print(f'winner: {winnerInd} with bid: {winner},' +
-    #       f'to Pay: {winnerToPay}, profit: {marketPrice - winnerToPay}')
     # print(np.array(auctionRounds)[:,1])
     return winners, profitBuyer, profitSeller, np.array(auctionRounds)[:,1]
 
@@ -132,7 +126,7 @@ def initBiddingFactor(amountBuyers, amountSellers):
     """
     # biddingfactor is 2 dimensional
     biddingFactorAlpha = np.random.uniform(low=1.0, high=1.9,
-                                           size=(amountBuyers, amountSellers))  # I dont know how to use the thing but R wil not be needed
+                                           size=(amountBuyers, amountSellers))
     return biddingFactorAlpha
 
 
@@ -195,20 +189,15 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
     biddingFactorHistory = []
     biddingFactor = initBiddingFactor(N, K)
     biddingFactorHistory.append(biddingFactor)
-    for auctionRound in tqdm.tqdm(range(R)):
+    for auctionRound in range(R):
         # print(f'Auctionround: {auctionRound}')
-        # print(f'biddingFactor: {biddingFactor}')
-        # print(f'valueItems: {valueItems[auctionRound]}')
         # randomize order of sold items
         auctionItemOrderInd = np.random.permutation(np.arange(K))
-        # print(auctionItemOrderInd)
         auctionItemOrder = rearangeArray(valueItems[auctionRound], auctionItemOrderInd)
         # adapt to the biddingFactors to the order the items are sold
         biddingFactorOrder = np.array([rearangeArray(i, auctionItemOrderInd) for i in biddingFactor])
-        # print(biddingFactor)
-        # print(f'{biddingFactorOrder}')
         if not pure:
-            winners, profitsBuyer, profitsSeller, marketPrices = auctionItems(auctionItemOrder,
+            winners, profitsBuyer, profitsSeller, marketPrices = auctionItemsImpure(auctionItemOrder,
                                                                 biddingFactorOrder, penalty)
         else:
             # TODO: implement pure auction
@@ -217,7 +206,6 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
         rMarketprices.append(marketPrices)
         rSellerProfit.append(rSellerProfit[-1]+profitsSeller)
         rBuyerProfit.append(rBuyerProfit[-1]+profitsBuyer)
-
 
         biddingFactor = updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         biddingFactorHistory.append(biddingFactor)
@@ -248,5 +236,6 @@ numSellers = 10
 numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
+pure = False
 
-auctionSimulation(numItems, numSellers, numBuyers, numRounds, maxStartingPrice, penalty)
+auctionSimulation(numItems, numSellers, numBuyers, numRounds, maxStartingPrice, penalty, pure=pure)
