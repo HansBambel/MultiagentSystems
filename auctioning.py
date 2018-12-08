@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import tqdm
 
 
 def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
@@ -37,6 +39,7 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
 
         # winner pays only second highest
         winnerToPay = sortedBids[-2]
+        # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         # TODO check whether buyer wants to revoke previous won item (need penalty here)
         # --> seller gets penalty (profit + penalty), but profit of previous sell needs to be deducted
@@ -46,7 +49,8 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
 
     # print(f'winner: {winnerInd} with bid: {winner},' +
     #       f'to Pay: {winnerToPay}, profit: {marketPrice - winnerToPay}')
-    return winners, profitBuyer, profitSeller
+    # print(np.array(auctionRounds)[:,1])
+    return winners, profitBuyer, profitSeller, np.array(auctionRounds)[:,1]
 
 
 def calculateProfits(auctionRounds, numBuyers, numSellers, penalty):
@@ -153,7 +157,7 @@ def restoreOriginalOrder(array, orderedInd):
 btypes = ['default']
 
 
-def auctionSimulation(M, K, N, R, Smax, penalty,
+def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
                       pure=False, biddingtype=btypes[0]):
     """Full auction simulation function
 
@@ -174,12 +178,14 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
     rBuyersProfit -- Profits for every buyer
     """
     if N < K:
-        print('Error: must be more buyers than sellers')
+        raise ValueError('Error: lawl, learn english, fgt')
 
-    np.random.seed(42)
-    rStats = []
-    rSellerProfit = []
-    rBuyersProfit = []
+
+    np.random.seed(1337)
+    # seed 80 has a negative profit
+    rMarketprices = [np.zeros(K)]
+    rSellerProfit = [np.zeros(K)]
+    rBuyerProfit = [np.zeros(N)]
 
     seller2Items = assignItemToSeller(K, M)
     valueItems = assignPriceToItem(seller2Items, R, Smax)
@@ -189,10 +195,10 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
     biddingFactorHistory = []
     biddingFactor = initBiddingFactor(N, K)
     biddingFactorHistory.append(biddingFactor)
-    for auctionRound in range(R):
-        print(auctionRound)
-        print(f'biddingFactor: {biddingFactor}')
-        print(f'valueItems: {valueItems[auctionRound]}')
+    for auctionRound in tqdm.tqdm(range(R)):
+        # print(f'Auctionround: {auctionRound}')
+        # print(f'biddingFactor: {biddingFactor}')
+        # print(f'valueItems: {valueItems[auctionRound]}')
         # randomize order of sold items
         auctionItemOrderInd = np.random.permutation(np.arange(K))
         # print(auctionItemOrderInd)
@@ -202,17 +208,45 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
         # print(biddingFactor)
         # print(f'{biddingFactorOrder}')
         if not pure:
-            winners, profitsBuyer, profitsSeller = auctionItems(auctionItemOrder,
-                                                                biddingFactorOrder)
+            winners, profitsBuyer, profitsSeller, marketPrices = auctionItems(auctionItemOrder,
+                                                                biddingFactorOrder, penalty)
         else:
             # TODO: implement pure auction
             raise NotImplementedError
 
+        rMarketprices.append(marketPrices)
+        rSellerProfit.append(rSellerProfit[-1]+profitsSeller)
+        rBuyerProfit.append(rBuyerProfit[-1]+profitsBuyer)
+
 
         biddingFactor = updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         biddingFactorHistory.append(biddingFactor)
-        print(f'profitsBuyer: \n {profitsBuyer}')
-        print(f'profitsSeller: \n {profitsSeller}')
+        # print(f'profitsBuyer: \n {rBuyerProfit[-1]}')
+        # print(f'profitsSeller: \n {rSellerProfit[-1]}')
+
+    fig, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10,14))
+    ax1.plot(rBuyerProfit)
+    ax1.set_title(f'Buyerprofit, numBuyers: {N}')
+    # ax1.set_xlabel('Auctionrounds')
+    ax1.set_ylabel('Profit')
+
+    ax2.plot(rSellerProfit)
+    ax2.set_title(f'Sellerprofit, numSellers: {K}')
+    # ax2.set_xlabel('Auctionrounds')
+    ax2.set_ylabel('Profit')
+
+    ax3.plot(rMarketprices)
+    ax3.set_title('Marketprices')
+    ax3.set_xlabel('Auctionrounds')
+    ax3.set_ylabel('Price')
+    plt.show()
 
 
-auctionSimulation(6, 3, 10, 8, 100, 5)
+numItems = 6
+numBuyers = 50
+numSellers = 10
+numRounds = 20
+maxStartingPrice = 100
+penalty = 0.05
+
+auctionSimulation(numItems, numSellers, numBuyers, numRounds, maxStartingPrice, penalty)
