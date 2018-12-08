@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=5):
+def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=0.05):
     """A round of auctions
 
     It needs to return after every iteration (round) the values needed
@@ -17,14 +17,20 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=5):
      total buyer profit, total seller profit, market history)
 
     """
+
+    auctionRounds = []
     bids = biddingFactorAlpha * itemStartingprice
     # NOTE auctions take place one item at a time
     winners = []
     for i, item in enumerate(itemStartingprice):
-        print(f'Startingprice: {item}')
-        print(f'bids: {bids[:, i]}')
-        average = computeMarketPrice(bids, i)
-        sortedBids = sorted(bids[:, i][bids[:, i] < average])
+        # print(f'Startingprice: {item}')
+        # impure
+        # look at old bids and adapt bids with formula 4
+        for winnerInd, marketPrice, winningBid in auctionRounds:
+            bids[winnerInd, i] = max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
+        # print(f'bids: {bids[:, i]}')
+        marketPrice = computeMarketPrice(bids, i)
+        sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
         winner = sortedBids[-1]
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
@@ -34,9 +40,35 @@ def auctionItems(itemStartingprice, biddingFactorAlpha, penalty=5):
 
         # TODO check whether buyer wants to revoke previous won item (need penalty here)
         # --> seller gets penalty (profit + penalty), but profit of previous sell needs to be deducted
-        print(f'winner: {winnerInd} with bid: {winner},' +
-              f'to Pay: {winnerToPay}, profit: {average - winnerToPay}')
-    return winners
+        auctionRounds.append([winnerInd, marketPrice, winnerToPay])
+    # after auction ends: calculate profits
+    profitBuyer, profitSeller = calculateProfits(auctionRounds, len(biddingFactorAlpha), len(biddingFactorAlpha[1]), penalty)
+
+    # print(f'winner: {winnerInd} with bid: {winner},' +
+    #       f'to Pay: {winnerToPay}, profit: {marketPrice - winnerToPay}')
+    return winners, profitBuyer, profitSeller
+
+
+def calculateProfits(auctionRounds, numBuyers, numSellers, penalty):
+    profitBuyer = np.zeros(numBuyers)
+    profitSeller = np.zeros(numSellers)
+    for seller, [winnerInd, marketPrice, winningBid] in enumerate(auctionRounds):
+        if profitBuyer[winnerInd] == 0:
+            profitSeller[seller] += winningBid
+            profitBuyer[winnerInd] = marketPrice - winningBid
+        # if buyer already auctioned another item: refund previous one
+        else:
+            profitSeller[seller] += winningBid
+            oldWinningBid = 0
+            oldSeller = 0
+            for oldS, r in enumerate(auctionRounds[:seller]):
+                if r[0]==winnerInd:
+                    oldWinningBid = r[2]
+                    oldSeller = oldS
+            fee = oldWinningBid*penalty
+            profitBuyer[winnerInd] = marketPrice - winningBid - fee
+            profitSeller[oldSeller] += fee - oldWinningBid
+    return profitBuyer, profitSeller
 
 
 def updateBiddingFactor(biddingFactor, winnerIDs, sellerIDs, lowerDelta, higherDelta):
@@ -122,7 +154,7 @@ btypes = ['default']
 
 
 def auctionSimulation(M, K, N, R, Smax, penalty,
-                      pure=True, biddingtype=btypes[0]):
+                      pure=False, biddingtype=btypes[0]):
     """Full auction simulation function
 
     Parameters:
@@ -163,17 +195,24 @@ def auctionSimulation(M, K, N, R, Smax, penalty,
         print(f'valueItems: {valueItems[auctionRound]}')
         # randomize order of sold items
         auctionItemOrderInd = np.random.permutation(np.arange(K))
-        print(auctionItemOrderInd)
+        # print(auctionItemOrderInd)
         auctionItemOrder = rearangeArray(valueItems[auctionRound], auctionItemOrderInd)
         # adapt to the biddingFactors to the order the items are sold
         biddingFactorOrder = np.array([rearangeArray(i, auctionItemOrderInd) for i in biddingFactor])
         # print(biddingFactor)
         # print(f'{biddingFactorOrder}')
-        winners = auctionItems(auctionItemOrder,
-                               biddingFactorOrder)
+        if not pure:
+            winners, profitsBuyer, profitsSeller = auctionItems(auctionItemOrder,
+                                                                biddingFactorOrder)
+        else:
+            # TODO: implement pure auction
+            raise NotImplementedError
+
 
         biddingFactor = updateBiddingFactor(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         biddingFactorHistory.append(biddingFactor)
+        print(f'profitsBuyer: \n {profitsBuyer}')
+        print(f'profitsSeller: \n {profitsSeller}')
 
 
 auctionSimulation(6, 3, 10, 8, 100, 5)
