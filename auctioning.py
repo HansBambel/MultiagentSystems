@@ -114,17 +114,9 @@ def updateBiddingFactorImpure(biddingFactor, winnerIDs, sellerIDs, lowerDelta, h
     """
     # Update winner and all other "losers"
     for winner, seller in enumerate(sellerIDs):
-        print('seller ', seller)
-        print('winner ', winnerIDs[winner])
-        print('other ', winnerIDs[:winner-1]+winnerIDs[winner:])
+        nonWinners = [i for i in range(len(biddingFactor)) if i != winnerIDs[winner]]
         biddingFactor[winnerIDs[winner], seller] *= lowerDelta[winnerIDs[winner]]
-        # TODO: DOES NOT UPDATE ALL YET
-        # for i, buyer in enumerate(biddingFactor[:, seller]):
-        #     # print(i, winner)
-        #     if i != winner:
-        #         biddingFactor[i, seller] *= higherDelta[i]
-        # biddingFactor[winnerIDs[:winner]+winnerIDs[winner+1:], seller] *= higherDelta[~winnerIDs[winner]]
-        biddingFactor[~winnerIDs[winner], seller] *= higherDelta[~winnerIDs[winner]]
+        biddingFactor[nonWinners, seller] *= higherDelta[nonWinners]
 
     return biddingFactor
 
@@ -136,10 +128,8 @@ def updateBiddingFactorPure(biddingFactor, winnerIDs, sellerIDs, lowerDelta, hig
         # update winner
         biddingFactor[currentWinner, seller] *= lowerDelta[currentWinner]
         # update all who have not won yet
-        print(f'currentWinner: {currentWinner}')
-        print(f'players who have not won yet: {~currentWinner}')
-        biddingFactor[(~currentWinner and winnerIDs[currentWinner:]), seller] *= \
-            higherDelta[(~currentWinner and winnerIDs[currentWinner:])]
+        nonWinners = [i for i in range(len(biddingFactor)) if i != winnerIDs[winner] or i in winnerIDs[:winner]]
+        biddingFactor[nonWinners, seller] *= higherDelta[nonWinners]
 
     return biddingFactor
 
@@ -251,17 +241,10 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
                                                                                     biddingFactorOrder, penalty)
             # BiddingFactors get updated for all buyers in every round
             biddingFactor = updateBiddingFactorImpure(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
-            print(winners[-1])
-            print(f'new: biddingFactor: {biddingFactor}')
         else:
-            # TODO: implement pure auction
-            # TODO: biddingFactor changes only for those that actually lost. If a buyer won an auction the future
-            # biddingfactors are not updated
             winners, profitsBuyer, profitsSeller, marketPrices = auctionItemsPure(auctionItemOrder,
                                                                                   biddingFactorOrder)
             biddingFactor = updateBiddingFactorPure(biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
-            print(winners[-1])
-            print(f'new: biddingFactor: {biddingFactor}')
 
         rMarketprices.append(marketPrices)
         rSellerProfit.append(rSellerProfit[-1]+profitsSeller)
@@ -290,11 +273,12 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
 
 
 numItems = 6
-numBuyers = 10
-numSellers = 3
+numBuyers = 100
+numSellers = 20
 numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
 pure = False
 
 auctionSimulation(numItems, numSellers, numBuyers, numRounds, maxStartingPrice, penalty, pure=pure)
+auctionSimulation(numItems, numSellers, numBuyers, numRounds, maxStartingPrice, penalty, pure=not pure)
