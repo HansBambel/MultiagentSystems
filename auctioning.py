@@ -277,24 +277,30 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
     else:
         fig.suptitle('Impure auction', fontsize=16)
     ax1.plot(buyerprofit)
-    ax1.plot(np.mean(buyerprofit, axis=1), '--', color='red', label='Mean', linewidth=3)
-    ax1.plot(np.median(buyerprofit, axis=1), '--', color='purple', label='Median', linewidth=2.5)
+    ax1.plot(np.mean(buyerprofit, axis=1), '--',
+             color='red', label='Mean', linewidth=3)
+    ax1.plot(np.median(buyerprofit, axis=1), '--',
+             color='purple', label='Median', linewidth=2.5)
     ax1.set_title(f'Buyerprofit, numBuyers: {N}')
     # ax1.set_xlabel('Auctionrounds')
     ax1.set_ylabel('Profit')
     ax1.legend()
 
     ax2.plot(sellerprofit)
-    ax2.plot(np.mean(sellerprofit, axis=1), '--', color='red', label='Mean', linewidth=3)
-    ax2.plot(np.median(sellerprofit, axis=1), '--', color='purple', label='Median', linewidth=2.5)
+    ax2.plot(np.mean(sellerprofit, axis=1), '--',
+             color='red', label='Mean', linewidth=3)
+    ax2.plot(np.median(sellerprofit, axis=1), '--',
+             color='purple', label='Median', linewidth=2.5)
     ax2.set_title(f'Sellerprofit, numSellers: {K}')
     # ax2.set_xlabel('Auctionrounds')
     ax2.set_ylabel('Profit')
     ax2.legend()
 
     ax3.plot(marketprices)
-    ax3.plot(np.mean(marketprices, axis=1), '--', color='red', label='Mean', linewidth=3)
-    ax3.plot(np.median(marketprices, axis=1), '--', color='purple', label='Median', linewidth=2.5)
+    ax3.plot(np.mean(marketprices, axis=1), '--',
+             color='red', label='Mean', linewidth=3)
+    ax3.plot(np.median(marketprices, axis=1), '--',
+             color='purple', label='Median', linewidth=2.5)
     ax3.set_title('Marketprices')
     ax3.set_xlabel('Auctionrounds')
     ax3.set_ylabel('Price')
@@ -302,15 +308,7 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
     plt.show()
 
 
-numItems = 6
-numBuyers = 40
-numSellers = 20
-numRounds = 20
-maxStartingPrice = 100
-penalty = 0.05
-pure = False
-
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 8:
         try:
             numItems = int(sys.argv[1])
@@ -332,3 +330,20 @@ if __name__ == '__main__':
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Profit of sellers: \n {s[-1]}')
     visualize(numBuyers, numSellers, b, s, m, pure)
+
+
+def experiment():
+    pass
+
+
+numItems = 6
+numBuyers = 40
+numSellers = 20
+numRounds = 20
+maxStartingPrice = 100
+penalty = 0.05
+pure = False
+
+if __name__ == '__main__':
+    # main()
+    experiment()
