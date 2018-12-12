@@ -349,9 +349,15 @@ def main():
 
 
 def experiment():
-    pass
+    buyerincrease = 10
+    sellerincrease = 10
+    step = 5
+    for ns in range(1, sellerincrease):
+        for nb in range(ns, ns+buyerincrease):
+            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 100, 100)
+            visualize(nb*step, ns*step, b, s, m, False)
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     experiment()
