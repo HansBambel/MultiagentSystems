@@ -8,3 +8,4 @@ report/sample/*
 .idea/*
 *.txt
 __pycache__/*
+figure/*
