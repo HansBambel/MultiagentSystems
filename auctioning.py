@@ -5,7 +5,7 @@ import sys
 numItems = 60
 numBuyers = 50
 numSellers = 30
-numRounds = 25
+numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
 pure = False
@@ -30,8 +30,11 @@ def auctionItemsStratOne(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -65,8 +68,11 @@ def auctionItemsStratTwo(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -127,8 +133,11 @@ def auctionItemsImpure(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -158,8 +167,11 @@ def auctionItemsPure(itemStartingprice, biddingFactorAlpha):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -494,8 +506,8 @@ def main():
     else:
         print('Using default arguments')
 
-    b, s, m = auctionSimulationStrats(numItems, numSellers, numBuyers, numRounds,
-                                      maxStartingPrice, penalty, one=False)
+    b, s, m = auctionSimulation(numItems, numSellers, numBuyers, numRounds,
+                                      maxStartingPrice, penalty, pure)
     print('Results after auction:')
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Profit of sellers: \n {s[-1]}')
