@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+from auctioningStrats import *
 # import tqdm
 
-numItems = 6
-numBuyers = 40
-numSellers = 20
-numRounds = 20
+numItems = 60
+numBuyers = 400
+numSellers = 200
+numRounds = 100
 maxStartingPrice = 100
 penalty = 0.05
 pure = False
@@ -277,6 +278,73 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
         # print(f'profitsSeller: \n {rSellerProfit[-1]}')
     return rBuyerProfit, rSellerProfit, rMarketprices
 
+def auctionSimulationStrats(M, K, N, R, Smax, penalty=0.05,
+                      one=False, biddingtype=btypes[0]):
+    """Full auction simulation function
+
+    Parameters:
+    M -- The amount of types of items
+    K -- The amount of sellers
+    N -- The amount of buyers
+    R -- The amount of bidding rounds
+    Smax -- Maximum starting price
+    penalty -- Penalty factor for calculating penalties when selling back
+    pure -- Boolean if the auction allows selling back
+    biddingtype -- Set the type of bidding factor calculation
+
+    Returns:
+    A three tuple containing
+    rStats -- Statistics of market price development
+    rSellerProfit -- Profits for every seller
+    rBuyersProfit -- Profits for every buyer
+    """
+    if N < K:
+        raise ValueError('Error: lawl, learn english, fgt')
+
+    np.random.seed(1337)
+    # seed 80 has a negative profit
+    rMarketprices = [np.zeros(K)]
+    rSellerProfit = [np.zeros(K)]
+    rBuyerProfit = [np.zeros(N)]
+
+    seller2Items = assignItemToSeller(K, M)
+    valueItems = assignPriceToItem(seller2Items, R, Smax)
+    lowerDelta = np.random.uniform(0.7, 1.0, size=N)
+    higherDelta = np.random.uniform(1.0, 1.3, size=N)
+
+    biddingFactorHistory = []
+    biddingFactor = initBiddingFactor(N, K)
+    biddingFactorHistory.append(biddingFactor)
+    for auctionRound in range(R):
+        # print(f'Auctionround: {auctionRound}')
+        # randomize order of sold items
+        auctionItemOrderInd = np.random.permutation(np.arange(K))
+        auctionItemOrder = rearangeArray(
+            valueItems[auctionRound], auctionItemOrderInd)
+        # adapt to the biddingFactors to the order the items are sold
+        biddingFactorOrder = np.array(
+            [rearangeArray(i, auctionItemOrderInd) for i in biddingFactor])
+        if one:
+            winners, profitsBuyer, profitsSeller, marketPrices = auctionItemsStratOne(auctionItemOrder,
+                                                                                    biddingFactorOrder, penalty)
+            # BiddingFactors get updated for all buyers in every round
+            biddingFactor = updateBiddingFactorImpure(
+                biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
+        else:
+            winners, profitsBuyer, profitsSeller, marketPrices, overBidsRounds = auctionItemsStratTwo(auctionItemOrder,
+                                                                                  biddingFactorOrder)
+            biddingFactor = updateBiddingFactorStratTwo(
+                biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta, overBidsRounds)
+
+        rMarketprices.append(marketPrices)
+        rSellerProfit.append(rSellerProfit[-1]+profitsSeller)
+        rBuyerProfit.append(rBuyerProfit[-1]+profitsBuyer)
+
+        biddingFactorHistory.append(biddingFactor)
+        # print(f'profitsBuyer: \n {rBuyerProfit[-1]}')
+        # print(f'profitsSeller: \n {rSellerProfit[-1]}')
+    return rBuyerProfit, rSellerProfit, rMarketprices
+
 
 def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     fig, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 14))
@@ -314,8 +382,13 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     ax3.set_ylabel('Price')
     ax3.legend()
     if save:
+<<<<<<< HEAD
         fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
         plt.close()
+=======
+        fig.savefig(
+            f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
+>>>>>>> d371e690a51a92c724e16f8c60846bb54e22755c
     else:
         plt.show()
 
@@ -358,7 +431,11 @@ def experiment():
     step = 5
     for ns in range(1, sellerincrease):
         for nb in range(ns, ns+buyerincrease):
+<<<<<<< HEAD
             b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100)
+=======
+            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 45, 100)
+>>>>>>> d371e690a51a92c724e16f8c60846bb54e22755c
             visualize(nb*step, ns*step, b, s, m, False, save=True)
 
 
