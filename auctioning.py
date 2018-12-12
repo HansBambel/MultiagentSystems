@@ -1,16 +1,103 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from auctioningStrats import *
-# import tqdm
 
 numItems = 60
-numBuyers = 400
-numSellers = 200
-numRounds = 100
+numBuyers = 50
+numSellers = 30
+numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
 pure = False
+
+
+def auctionItemsStratOne(itemStartingprice, biddingFactorAlpha, penalty=0.05):
+    auctionRounds = []
+    bids = biddingFactorAlpha * itemStartingprice
+    # NOTE auctions take place one item at a time
+    winners = []
+    for i, item in enumerate(itemStartingprice):
+        # print(f'Startingprice: {item}')
+        # look at old bids and adapt bids with formula 4
+        for winnerInd, marketPrice, winningBid in auctionRounds:
+            bids[winnerInd, i] = bids[winnerInd, i] - \
+                (marketPrice - winningBid) - winningBid*penalty
+            #max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
+        # print(f'bids: {bids[:, i]}')
+        marketPrice = computeMarketPrice(bids, i)
+        sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
+        winner = sortedBids[-1]
+        winnerInd = np.where(bids[:, i] == winner)[0][0]
+        winners.append(winnerInd)
+
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
+        # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
+
+        auctionRounds.append([winnerInd, marketPrice, winnerToPay])
+    # after auction ends: calculate profits
+    profitBuyer, profitSeller = calculateProfits(auctionRounds, len(
+        biddingFactorAlpha), len(biddingFactorAlpha[1]), penalty)
+
+    # print(np.array(auctionRounds)[:,1])
+    return winners, profitBuyer, profitSeller, np.array(auctionRounds)[:, 1]
+
+
+def auctionItemsStratTwo(itemStartingprice, biddingFactorAlpha, penalty=0.05):
+    auctionRounds = []
+    overBidsRounds = []
+    bids = biddingFactorAlpha * itemStartingprice
+    # NOTE auctions take place one item at a time
+    winners = []
+    for i, item in enumerate(itemStartingprice):
+        # print(f'Startingprice: {item}')
+        # look at old bids and adapt bids with formula 4
+        for winnerInd, marketPrice, winningBid in auctionRounds:
+            bids[winnerInd, i] = bids[winnerInd, i] - \
+                (marketPrice - winningBid) - winningBid*penalty
+            #max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
+        # print(f'bids: {bids[:, i]}')
+        marketPrice = computeMarketPrice(bids, i)
+        sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
+        overBids = [j for j, bid in enumerate(bids[i]) if bid >= marketPrice]
+        overBidsRounds.append(overBids)
+        winner = sortedBids[-1]
+        winnerInd = np.where(bids[:, i] == winner)[0][0]
+        winners.append(winnerInd)
+
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
+        # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
+
+        auctionRounds.append([winnerInd, marketPrice, winnerToPay])
+    # after auction ends: calculate profits
+    profitBuyer, profitSeller = calculateProfits(auctionRounds, len(
+        biddingFactorAlpha), len(biddingFactorAlpha[1]), penalty)
+
+    # print(np.array(auctionRounds)[:,1])
+    return winners, profitBuyer, profitSeller, np.array(auctionRounds)[:, 1], overBidsRounds
+
+
+def updateBiddingFactorStratTwo(biddingFactor, winnerIDs, sellerIDs, lowerDelta, higherDelta, overBidsRounds):
+    # Update winner and all other "losers"
+    for winner, seller in enumerate(sellerIDs):
+        nonWinners = [i for i in range(
+            len(biddingFactor)) if i != winnerIDs[winner]]
+        biddingFactor[winnerIDs[winner],
+                      seller] *= lowerDelta[winnerIDs[winner]]
+        biddingFactor[nonWinners, seller] *= higherDelta[nonWinners]
+        for nw in nonWinners:
+            if nw in overBidsRounds[seller]:
+                biddingFactor[nw, seller] = np.random.uniform(
+                    low=1.0, high=biddingFactor[nw, seller])
+    print(biddingFactor)
+    return biddingFactor
 
 
 def auctionItemsImpure(itemStartingprice, biddingFactorAlpha, penalty=0.05):
@@ -46,8 +133,11 @@ def auctionItemsImpure(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -77,8 +167,11 @@ def auctionItemsPure(itemStartingprice, biddingFactorAlpha):
         winnerInd = np.where(bids[:, i] == winner)[0][0]
         winners.append(winnerInd)
 
-        # winner pays only second highest
-        winnerToPay = sortedBids[-2]
+        # winner pays only second highest (if there is only one below marketPrice, he pays the startingprice)
+        if len(sortedBids) > 1:
+            winnerToPay = sortedBids[-2]
+        else:
+            winnerToPay = item
         # print(f'marketPrice {winnerToPay}, Winner: {winnerInd}, Profit: {marketPrice - winnerToPay}')
 
         auctionRounds.append([winnerInd, marketPrice, winnerToPay])
@@ -278,8 +371,9 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
         # print(f'profitsSeller: \n {rSellerProfit[-1]}')
     return rBuyerProfit, rSellerProfit, rMarketprices
 
+
 def auctionSimulationStrats(M, K, N, R, Smax, penalty=0.05,
-                      one=False, biddingtype=btypes[0]):
+                            one=False, biddingtype=btypes[0]):
     """Full auction simulation function
 
     Parameters:
@@ -326,13 +420,13 @@ def auctionSimulationStrats(M, K, N, R, Smax, penalty=0.05,
             [rearangeArray(i, auctionItemOrderInd) for i in biddingFactor])
         if one:
             winners, profitsBuyer, profitsSeller, marketPrices = auctionItemsStratOne(auctionItemOrder,
-                                                                                    biddingFactorOrder, penalty)
+                                                                                      biddingFactorOrder, penalty)
             # BiddingFactors get updated for all buyers in every round
             biddingFactor = updateBiddingFactorImpure(
                 biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta)
         else:
             winners, profitsBuyer, profitsSeller, marketPrices, overBidsRounds = auctionItemsStratTwo(auctionItemOrder,
-                                                                                  biddingFactorOrder)
+                                                                                                      biddingFactorOrder)
             biddingFactor = updateBiddingFactorStratTwo(
                 biddingFactor, winners, auctionItemOrderInd, lowerDelta, higherDelta, overBidsRounds)
 
@@ -382,8 +476,8 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     ax3.set_ylabel('Price')
     ax3.legend()
     if save:
-        fig.savefig(
-            f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
+        fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
+        plt.close()
     else:
         plt.show()
 
@@ -413,7 +507,7 @@ def main():
         print('Using default arguments')
 
     b, s, m = auctionSimulation(numItems, numSellers, numBuyers, numRounds,
-                                maxStartingPrice, penalty, pure=pure)
+                                      maxStartingPrice, penalty, pure)
     print('Results after auction:')
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Profit of sellers: \n {s[-1]}')
@@ -426,10 +520,10 @@ def experiment():
     step = 5
     for ns in range(1, sellerincrease):
         for nb in range(ns, ns+buyerincrease):
-            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 45, 100)
+            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100)
             visualize(nb*step, ns*step, b, s, m, False, save=True)
 
 
 if __name__ == '__main__':
-    # main()
-    experiment()
+    main()
+    # experiment()
