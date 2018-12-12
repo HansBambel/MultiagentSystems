@@ -57,7 +57,7 @@ def auctionItemsPure(itemStartingprice, biddingFactorAlpha):
     winners = []
     for i, item in enumerate(itemStartingprice):
         # print(f'bids: {bids[:, i]}')
-        # TODO: take the winner out of consideration for the rest of the auctionround
+        # take the winner out of consideration for the rest of the auctionround
         bidsNonWinners = np.array(
             [b for i, b in enumerate(bids) if i not in winners])
         # print(f'bidsNonWinners: {bidsNonWinners[:, i]}')
@@ -267,11 +267,15 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
         biddingFactorHistory.append(biddingFactor)
         # print(f'profitsBuyer: \n {rBuyerProfit[-1]}')
         # print(f'profitsSeller: \n {rSellerProfit[-1]}')
-        return rBuyerProfit, rSellerProfit, rMarketprices
+    return rBuyerProfit, rSellerProfit, rMarketprices
 
 
-def visualize(N, K, buyerprofit, sellerprofit, marketprices):
+def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
     fig, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 14))
+    if pure:
+        fig.suptitle('Pure auction', fontsize=16)
+    else:
+        fig.suptitle('Impure auction', fontsize=16)
     ax1.plot(buyerprofit)
     ax1.set_title(f'Buyerprofit, numBuyers: {N}')
     # ax1.set_xlabel('Auctionrounds')
@@ -315,4 +319,7 @@ if __name__ == '__main__':
 
     b, s, m = auctionSimulation(numItems, numSellers, numBuyers, numRounds,
                                 maxStartingPrice, penalty, pure=pure)
-    visualize(numBuyers, numSellers, b, s, m)
+    print('Results after auction:')
+    print(f'Profit of buyers: \n {b[-1]}')
+    print(f'Profit of sellers: \n {s[-1]}')
+    visualize(numBuyers, numSellers, b, s, m, pure)
