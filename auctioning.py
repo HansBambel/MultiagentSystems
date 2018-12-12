@@ -314,7 +314,7 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     ax3.set_ylabel('Price')
     ax3.legend()
     if save:
-        fig.savefig()
+        fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
     else:
         plt.show()
 
