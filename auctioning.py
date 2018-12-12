@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import sys
 # import tqdm
 
+numItems = 6
+numBuyers = 40
+numSellers = 20
+numRounds = 20
+maxStartingPrice = 100
+penalty = 0.05
+pure = False
+
 
 def auctionItemsImpure(itemStartingprice, biddingFactorAlpha, penalty=0.05):
     """A round of auctions
@@ -312,6 +320,7 @@ def main():
     global numItems
     global numBuyers
     global numRounds
+    global numSellers
     global maxStartingPrice
     global penalty
     global pure
@@ -343,14 +352,6 @@ def experiment():
     pass
 
 
-numItems = 6
-numBuyers = 40
-numSellers = 20
-numRounds = 20
-maxStartingPrice = 100
-penalty = 0.05
-pure = False
-
 if __name__ == '__main__':
-    # main()
+    main()
     experiment()
