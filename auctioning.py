@@ -278,7 +278,7 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
     return rBuyerProfit, rSellerProfit, rMarketprices
 
 
-def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
+def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     fig, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 14))
     if pure:
         fig.suptitle('Pure auction', fontsize=16)
@@ -313,7 +313,10 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
     ax3.set_xlabel('Auctionrounds')
     ax3.set_ylabel('Price')
     ax3.legend()
-    plt.show()
+    if save:
+        fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
+    else:
+        plt.show()
 
 
 def main():
@@ -345,7 +348,7 @@ def main():
     print('Results after auction:')
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Profit of sellers: \n {s[-1]}')
-    visualize(numBuyers, numSellers, b, s, m, pure)
+    visualize(numBuyers, numSellers, b, s, m, pure, save=False)
 
 
 def experiment():
