@@ -278,6 +278,7 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
         fig.suptitle('Impure auction', fontsize=16)
     ax1.plot(buyerprofit)
     ax1.plot(np.mean(buyerprofit, axis=1), '--', color='red', label='Mean', linewidth=3)
+    ax1.plot(np.median(buyerprofit, axis=1), '--', color='purple', label='Median', linewidth=2.5)
     ax1.set_title(f'Buyerprofit, numBuyers: {N}')
     # ax1.set_xlabel('Auctionrounds')
     ax1.set_ylabel('Profit')
@@ -285,6 +286,7 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
 
     ax2.plot(sellerprofit)
     ax2.plot(np.mean(sellerprofit, axis=1), '--', color='red', label='Mean', linewidth=3)
+    ax2.plot(np.median(sellerprofit, axis=1), '--', color='purple', label='Median', linewidth=2.5)
     ax2.set_title(f'Sellerprofit, numSellers: {K}')
     # ax2.set_xlabel('Auctionrounds')
     ax2.set_ylabel('Profit')
@@ -292,6 +294,7 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
 
     ax3.plot(marketprices)
     ax3.plot(np.mean(marketprices, axis=1), '--', color='red', label='Mean', linewidth=3)
+    ax3.plot(np.median(marketprices, axis=1), '--', color='purple', label='Median', linewidth=2.5)
     ax3.set_title('Marketprices')
     ax3.set_xlabel('Auctionrounds')
     ax3.set_ylabel('Price')
