@@ -267,7 +267,7 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
         biddingFactorHistory.append(biddingFactor)
         # print(f'profitsBuyer: \n {rBuyerProfit[-1]}')
         # print(f'profitsSeller: \n {rSellerProfit[-1]}')
-        return rBuyerProfit, rSellerProfit, rMarketprices
+    return rBuyerProfit, rSellerProfit, rMarketprices
 
 
 def visualize(N, K, buyerprofit, sellerprofit, marketprices):
@@ -298,15 +298,15 @@ penalty = 0.05
 pure = False
 
 if __name__ == '__main__':
-    if len(sys.argv) == 7:
+    if len(sys.argv) == 8:
         try:
-            numItems = int(sys.argv[0])
-            numBuyers = int(sys.argv[1])
-            numSellers = int(sys.argv[2])
-            numRounds = int(sys.argv[3])
-            maxStartingPrice = int(sys.argv[4])
-            penalty = float(sys.argv[5])
-            pure = bool(sys.argv[6])
+            numItems = int(sys.argv[1])
+            numBuyers = int(sys.argv[2])
+            numSellers = int(sys.argv[3])
+            numRounds = int(sys.argv[4])
+            maxStartingPrice = int(sys.argv[5])
+            penalty = float(sys.argv[6])
+            pure = bool(sys.argv[7])
         except ValueError:
             print('Illegal arguments')
             exit()
