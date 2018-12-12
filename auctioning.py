@@ -309,6 +309,13 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure):
 
 
 def main():
+    global numItems
+    global numBuyers
+    global numRounds
+    global maxStartingPrice
+    global penalty
+    global pure
+
     if len(sys.argv) == 8:
         try:
             numItems = int(sys.argv[1])
