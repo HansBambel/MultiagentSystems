@@ -382,13 +382,8 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     ax3.set_ylabel('Price')
     ax3.legend()
     if save:
-<<<<<<< HEAD
         fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
         plt.close()
-=======
-        fig.savefig(
-            f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
->>>>>>> d371e690a51a92c724e16f8c60846bb54e22755c
     else:
         plt.show()
 
@@ -431,11 +426,7 @@ def experiment():
     step = 5
     for ns in range(1, sellerincrease):
         for nb in range(ns, ns+buyerincrease):
-<<<<<<< HEAD
             b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100)
-=======
-            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 45, 100)
->>>>>>> d371e690a51a92c724e16f8c60846bb54e22755c
             visualize(nb*step, ns*step, b, s, m, False, save=True)
 
 
