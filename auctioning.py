@@ -4,11 +4,11 @@ import sys
 
 numItems = 60
 numBuyers = 50
-numSellers = 30
+numSellers = 20
 numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
-pure = False
+pure = True
 
 
 def auctionItemsStratOne(itemStartingprice, biddingFactorAlpha, penalty=0.05):
@@ -327,7 +327,7 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
     if N < K:
         raise ValueError('Error: lawl, learn english, fgt')
 
-    np.random.seed(1337)
+    # np.random.seed(1337)
     # seed 80 has a negative profit
     rMarketprices = [np.zeros(K)]
     rSellerProfit = [np.zeros(K)]
@@ -395,7 +395,7 @@ def auctionSimulationStrats(M, K, N, R, Smax, penalty=0.05,
     if N < K:
         raise ValueError('Error: lawl, learn english, fgt')
 
-    np.random.seed(1337)
+    # np.random.seed(1337)
     # seed 80 has a negative profit
     rMarketprices = [np.zeros(K)]
     rSellerProfit = [np.zeros(K)]
@@ -508,9 +508,11 @@ def main():
 
     b, s, m = auctionSimulation(numItems, numSellers, numBuyers, numRounds,
                                       maxStartingPrice, penalty, pure)
-    print('Results after auction:')
+    print(f'Results after {"pure" if pure else "impure"} auction:')
     print(f'Profit of buyers: \n {b[-1]}')
+    print(f'Mean of buyers profit: {np.mean(b[-1])}')
     print(f'Profit of sellers: \n {s[-1]}')
+    print(f'Mean of sellers profit: {np.mean(s[-1])}')
     visualize(numBuyers, numSellers, b, s, m, pure, save=False)
 
 
