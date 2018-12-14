@@ -520,10 +520,11 @@ def experiment():
     buyerincrease = 10
     sellerincrease = 10
     step = 5
+    pure = True
     for ns in range(1, sellerincrease):
         for nb in range(ns, ns+buyerincrease):
-            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100)
-            visualize(nb*step, ns*step, b, s, m, False, save=True)
+            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100, 0.05, pure)
+            visualize(nb*step, ns*step, b, s, m, pure, save=True)
 
 
 if __name__ == '__main__':
