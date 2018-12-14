@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import sys
 
 numItems = 60
-numBuyers = 50
-numSellers = 20
+numBuyers = 5
+numSellers = 5
 numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
@@ -22,7 +22,7 @@ def auctionItemsStratOne(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         for winnerInd, marketPrice, winningBid in auctionRounds:
             bids[winnerInd, i] = bids[winnerInd, i] - \
                 (marketPrice - winningBid) - winningBid*penalty
-            #max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
+            # max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
         # print(f'bids: {bids[:, i]}')
         marketPrice = computeMarketPrice(bids, i)
         sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
@@ -58,7 +58,7 @@ def auctionItemsStratTwo(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         for winnerInd, marketPrice, winningBid in auctionRounds:
             bids[winnerInd, i] = bids[winnerInd, i] - \
                 (marketPrice - winningBid) - winningBid*penalty
-            #max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
+            # max(bids[winnerInd, i], item + (marketPrice - winningBid) + winningBid*penalty)
         # print(f'bids: {bids[:, i]}')
         marketPrice = computeMarketPrice(bids, i)
         sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
@@ -324,7 +324,7 @@ def auctionSimulation(M, K, N, R, Smax, penalty=0.05,
     rSellerProfit -- Profits for every seller
     rBuyersProfit -- Profits for every buyer
     """
-    if N < K:
+    if N <= K:
         raise ValueError('Error: lawl, learn english, fgt')
 
     # np.random.seed(1337)
@@ -476,7 +476,8 @@ def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, save=False):
     ax3.set_ylabel('Price')
     ax3.legend()
     if save:
-        fig.savefig(f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
+        fig.savefig(
+            f'figures/stats_{"pure" if pure else "impure"}_sellers{K}_buyers{N}_rounds{len(sellerprofit)-1}.png')
         plt.close()
     else:
         plt.show()
@@ -499,7 +500,7 @@ def main():
             numRounds = int(sys.argv[4])
             maxStartingPrice = int(sys.argv[5])
             penalty = float(sys.argv[6])
-            pure = bool(sys.argv[7])
+            pure = bool(int(sys.argv[7]))
         except ValueError:
             print('Illegal arguments')
             exit()
@@ -507,8 +508,9 @@ def main():
         print('Using default arguments')
 
     b, s, m = auctionSimulation(numItems, numSellers, numBuyers, numRounds,
-                                      maxStartingPrice, penalty, pure)
+                                maxStartingPrice, penalty, pure)
     print(f'Results after {"pure" if pure else "impure"} auction:')
+
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Mean of buyers profit: {np.mean(b[-1])}')
     print(f'Profit of sellers: \n {s[-1]}')
@@ -517,13 +519,15 @@ def main():
 
 
 def experiment():
-    buyerincrease = 10
+    buyerincrease = 40
     sellerincrease = 10
     step = 5
-    pure = True
+    pure = False
     for ns in range(1, sellerincrease):
-        for nb in range(ns, ns+buyerincrease):
-            b, s, m = auctionSimulation(ns*step, ns*step, nb*step, 20, 100, 0.05, pure)
+        for nb in range(ns+1, ns+buyerincrease):
+            b, s, m = auctionSimulation(
+                ns*step, ns*step, nb*step, 20, 100, pure=pure)
+
             visualize(nb*step, ns*step, b, s, m, pure, save=True)
 
 
