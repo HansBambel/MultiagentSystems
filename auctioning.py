@@ -62,7 +62,11 @@ def auctionItemsStratTwo(itemStartingprice, biddingFactorAlpha, penalty=0.05):
         # print(f'bids: {bids[:, i]}')
         marketPrice = computeMarketPrice(bids, i)
         sortedBids = sorted(bids[:, i][bids[:, i] < marketPrice])
+<<<<<<< HEAD
+        overBids = [j for j, bid in enumerate(bids[i]) if bid >= marketPrice]
+=======
         overBids = [j for j, bid in enumerate(bids) if bid >= marketPrice]
+>>>>>>> e28200d2aad68255a10e0ce67068afc56d6653ec
         overBidsRounds.append(overBids)
         winner = sortedBids[-1]
         winnerInd = np.where(bids[:, i] == winner)[0][0]
@@ -96,7 +100,11 @@ def updateBiddingFactorStratTwo(biddingFactor, winnerIDs, sellerIDs, lowerDelta,
             if nw in overBidsRounds[seller]:
                 biddingFactor[nw, seller] = np.random.uniform(
                     low=1.0, high=biddingFactor[nw, seller])
+<<<<<<< HEAD
+    print(biddingFactor)
+=======
 
+>>>>>>> e28200d2aad68255a10e0ce67068afc56d6653ec
     return biddingFactor
 
 
