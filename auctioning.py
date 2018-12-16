@@ -421,15 +421,6 @@ def rearangeArray(array, indices):
     return [array[i] for i in indices]
 
 
-def restoreOriginalOrder(array, orderedInd):
-    """Reorder array to orderedInd indices"""
-    out = []
-    for i in range(len(array)):
-        ind = np.where(orderedInd == i)[0][0]
-        out.append(array[ind])
-    return out
-
-
 def visualize(N, K, buyerprofit, sellerprofit, marketprices, pure, pen=-1, save=False):
     """Visualize simulation results
 
