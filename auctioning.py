@@ -7,11 +7,11 @@ import sys
 ####################
 numItems = 10
 numSellers = 10
-numBuyers = 11
+numBuyers = 20
 numRounds = 20
 maxStartingPrice = 100
 penalty = 0.05
-pure = True
+pure = False
 
 
 #################################
@@ -517,8 +517,8 @@ def main():
 
     print(f'Profit of buyers: \n {b[-1]}')
     print(f'Profit of sellers: \n {s[-1]}')
-    print(f'Mean of buyers profit: {np.mean(b[-1]):.2f}')
-    print(f'Mean of sellers profit: {np.mean(s[-1]):.2f}')
+    print(f'Mean of buyers profit:  {np.mean(b[-1]):8.2f} Median: {np.median(b[-1]):8.2f}')
+    print(f'Mean of sellers profit: {np.mean(s[-1]):8.2f} Median: {np.median(s[-1]):8.2f}')
     visualize(numBuyers, numSellers, b, s, m, pure, save=False)
 
 
